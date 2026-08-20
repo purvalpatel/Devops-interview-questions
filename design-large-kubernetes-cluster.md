@@ -728,7 +728,7 @@ registry credentials
 You need an internal registry.
 
 For example:
-
+```
 Developer
    ↓
 CI
@@ -738,21 +738,21 @@ Image build
 Internal Registry
    ↓
 Kubernetes
-
+```
 The registry should support:
-
+```
 vulnerability scanning
 image signing
 retention policies
 replication
 access control
-
+```
 Examples include Harbor and enterprise registries.
 
 ### 25. CI/CD
 
 For your background, I'd design:
-
+```
 GitLab/GitHub
       │
       ▼
@@ -772,7 +772,7 @@ GitLab/GitHub
              │
              ▼
         Kubernetes
-
+```
 The important separation is:
 
 CI builds artifacts.
@@ -788,7 +788,7 @@ Argo CD
 or Flux.
 
 Repository structure could look like:
-
+```
 platform/
 ├── clusters/
 │   ├── prod-01/
@@ -806,13 +806,13 @@ platform/
     ├── app-a/
     ├── app-b/
     └── app-c/
-
+```
 Now your cluster becomes reproducible.
 
 ### 27. Monitoring
 
 I would use:
-
+```
 Prometheus
     │
     ├── Kubernetes metrics
@@ -823,7 +823,7 @@ Prometheus
           │
           ▼
        Grafana
-
+```
 For node monitoring:
 
 node_exporter
@@ -843,7 +843,7 @@ ROCm-compatible exporters/metrics.
 ### 28. Logging
 
 Centralized logging is mandatory.
-
+```
 Pods
  │
  ▼
@@ -857,7 +857,7 @@ Elasticsearch / OpenSearch / Loki
  │
  ▼
 Grafana / Kibana
-
+```
 Don't depend on individual nodes' local logs.
 
 If a node dies:
@@ -866,7 +866,7 @@ Node gone
 → logs should still exist
 
 ### 29. Distributed tracing
-
+```
 For microservices:
 
 Application
@@ -879,9 +879,9 @@ Collector
    │
    ▼
 Tempo / Jaeger / compatible backend
-
+```
 Now you can trace:
-
+```
 Request
  ↓
 Ingress
@@ -891,11 +891,11 @@ Service A
 Service B
  ↓
 Database
-
+```
 ### ### 30. Alerting
 
 Prometheus:
-
+```
 Prometheus
     │
     ▼
@@ -905,13 +905,13 @@ Alertmanager
     ├── Email
     ├── PagerDuty
     └── Incident system
-
+```
 Don't alert on everything.
 
 Use SLO-based alerts.
 
 Examples:
-
+```
 API availability
 Pod crash rate
 Node failure
@@ -922,10 +922,11 @@ etcd space
 CNI failures
 PVC failures
 control-plane latency
-### ### 31. Security
+```
+### 31. Security
 
 I would have multiple layers.
-
+```
                     Security
                        │
        ┌───────────────┼────────────────┐
@@ -935,9 +936,9 @@ I would have multiple layers.
     OIDC/RBAC     NetworkPolicy      Seccomp
     Vault         Cilium             AppArmor
     MFA           Firewall           SELinux
-
+```
 Also:
-
+```
 image scanning
 SBOM
 image signing
@@ -946,10 +947,11 @@ Pod Security Standards
 vulnerability scanning
 CIS benchmarks
 audit logs
+```
 ### 32. Admission control
 
 Before a workload enters the cluster:
-
+```
 kubectl apply
       │
       ▼
@@ -966,38 +968,39 @@ Admission
       │
       ▼
 Scheduler
-
+```
 Tools could include:
-
+```
 Kyverno
 Gatekeeper
 ValidatingAdmissionPolicy
+```
 ### 33. Resource governance
 
 At 1000 servers, resource abuse becomes a serious problem.
 
 Use:
-
+```
 ResourceQuota
 LimitRange
 PriorityClass
 Requests
 Limits
 PDB
-
+```
 For example:
-
+```
 Team A
 CPU quota = 20,000
 Memory quota = 100 TB
 GPU quota = ### 32
-
+```
 This prevents one team from consuming the entire platform.
 
 ### 34. GPU capacity automation
 
 Coming back to your previous question, this platform should also automate GPU capacity.
-
+```
                  GPU workloads
                        │
                        ▼
@@ -1017,9 +1020,9 @@ Coming back to your previous question, this platform should also automate GPU ca
                        │
                        ▼
                 GPU scheduler
-
+```
 And at the cluster level:
-
+```
 GPU capacity exhausted
           │
           ▼
@@ -1039,12 +1042,13 @@ Node becomes Ready
           │
           ▼
 Workload scheduled
+```
 ### ### 35. Autoscaling bare metal
 
 This is more complicated than cloud Kubernetes.
 
 Cloud:
-
+```
 Pod pending
  ↓
 Cloud API
@@ -1078,7 +1082,7 @@ Node labels
 Node Ready
  ↓
 Pod scheduled
-
+```
 That's why the provisioning platform is a critical part of your architecture.
 
 ### 36. Kubernetes upgrades
@@ -1086,7 +1090,7 @@ That's why the provisioning platform is a critical part of your architecture.
 Never upgrade 1000 nodes simultaneously.
 
 Use:
-
+```
 Cluster 1
   ↓
 Canary
@@ -1100,9 +1104,9 @@ Canary
 Cluster ### 3
   ↓
 Progressive rollout
-
+```
 For nodes:
-
+```
 Cordon
    ↓
 Drain
@@ -1112,7 +1116,7 @@ Upgrade
 Validate
    ↓
 Uncordon
-
+```
 Automate this with controlled concurrency.
 
 ### 37. Disaster recovery
@@ -1137,7 +1141,7 @@ Infrastructure
 Provisioning/configuration should be reproducible.
 
 The goal is:
-
+```
 Hardware failure
        ↓
 Provision replacement
@@ -1149,12 +1153,14 @@ Join cluster
 Argo CD
        ↓
 Applications return
+```
+
 ### 38. Multi-datacenter architecture
 
 If these 1000 servers span multiple datacenters, I would not automatically stretch one Kubernetes cluster across all sites.
 
 Prefer:
-
+```
              Global Layer
                   │
        ┌──────────┼──────────┐
@@ -1162,7 +1168,7 @@ Prefer:
      DC-1       DC-2       DC-### 3
        │          │          │
    Cluster(s) Cluster(s) Cluster(s)
-
+```
 This dramatically reduces failure-domain complexity.
 
 ### 39. Platform API / self-service
@@ -1170,7 +1176,7 @@ This dramatically reduces failure-domain complexity.
 At this scale, developers shouldn't need to understand all of Kubernetes.
 
 Give them:
-
+```
 Developer Portal
        │
        ▼
@@ -1188,13 +1194,13 @@ GitOps
        │
        ▼
 Kubernetes
-
+```
 Backstage can be useful here.
 
-40. The final architecture
+### 40. The final architecture
 
 Putting everything together:
-
+```
                          USERS
                            │
                     Developer Portal
@@ -1258,3 +1264,4 @@ CPU  Storage  App    NVIDIA AMD   RDMA    CPU  GPU   App
                            │
                            ▼
                    500–1000 Servers
+```
