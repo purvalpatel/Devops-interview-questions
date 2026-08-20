@@ -217,9 +217,9 @@ Everything should be reproducible.
 Kubernetes should use a standard CRI runtime.
 
 For example:
-
+```
 containerd
-
+```
 Architecture:
 ```
 Kubernetes
@@ -288,25 +288,25 @@ and ideally:
 Control-plane failure domain ≠ single rack
 
 For example:
-
+```
 Rack A → etcd-1
 Rack B → etcd-2
 Rack C → etcd-### 3
-
+```
 You also need:
-
+```
 automated backups
 backup verification
 restore testing
 monitoring
 disk latency monitoring
-
+```
 An etcd backup that has never been restored is not a proven backup.
 
 ### 9. API Server load balancing
 
 At scale:
-
+```
 kubectl
   │
   ▼
@@ -315,15 +315,15 @@ VIP / Load Balancer
   ├── API-Server-1
   ├── API-Server-2
   └── API-Server-### 3
-
+```
 For bare metal, possibilities include:
-
+```
 HAProxy
 Keepalived
 F5
 hardware load balancer
 MetalLB in appropriate designs
-
+```
 I like having a stable:
 
 k8s-api.example.com:644### 3
@@ -335,21 +335,21 @@ endpoint.
 This is one of the biggest design decisions.
 
 I'd evaluate:
-
+```
 Cilium
 Calico
-
+```
 For a modern large cluster, Cilium is particularly attractive because it gives:
-
+```
 CNI
 NetworkPolicy
 eBPF
 Service networking
 Observability
 Load balancing
-
+```
 Architecture:
-
+```
 Pod
  │
  ▼
@@ -360,28 +360,29 @@ Node network
  │
  ▼
 Leaf/Spine network
+```
 ### 11. Physical network
 
 At 500–1000 bare-metal servers, networking should normally use a leaf-spine architecture.
-
+```
               Spine
           /     |     \
        Leaf    Leaf    Leaf
        /|\     /|\     /|\
       / | \   / | \   / | \
    Servers  Servers  Servers
-
+```
 Avoid creating a huge Layer-2 domain unnecessarily.
 
 Typical separation:
-
+```
 Management network
 Storage network
 Kubernetes/node network
 Application network
 BMC/IPMI network
 GPU/RDMA network
-
+```
 depending on workload.
 
 ### 12. Storage
@@ -391,7 +392,7 @@ This needs careful design.
 Do not assume Kubernetes itself provides storage.
 
 You need:
-
+```
 Kubernetes
      │
      ▼
@@ -400,47 +401,48 @@ Kubernetes
  ┌───┼──────────────┐
  │   │              │
 NFS NetApp       Ceph
-
+```
 Possible backend:
-
+```
 NetApp Trident
 Ceph/Rook
 SAN
 NFS
 local NVMe
 cloud-like storage appliance
-
+```
 Different workloads need different storage classes.
 
 For example:
-
+```
 fast-local-nvme
 fast-network
 general-purpose
 database
 archive
-1### 3. Local storage
+```
+### 13. Local storage
 
 For workloads such as:
-
+```
 AI
 ML
 HPC
 temporary processing
 high-performance caches
-
+```
 local NVMe can be valuable.
 
 But remember:
 
-local storage ≠ highly available storage
+> local storage ≠ highly available storage
 
 If the node dies:
-
+```
 Node dies
    ↓
 Local NVMe unavailable
-
+```
 So local storage should only be used when the application architecture understands that failure mode.
 
 ### 14. GPU architecture
@@ -448,7 +450,7 @@ So local storage should only be used when the application architecture understan
 For your environment, I'd create dedicated GPU node pools.
 
 GPU Cluster
-
+```
 
  ┌────────────────────────────┐
  │ NVIDIA GPU nodes           │
@@ -462,42 +464,43 @@ GPU Cluster
  │                            │
  │ MI### 300 / MI-series          │
  └────────────────────────────┘
-
+```
 Node labels:
-
+```
 gpu.vendor: nvidia
 gpu.type: h100
 gpu.memory: 80gb
-
+```
 and:
-
+```
 gpu.vendor: amd
 gpu.type: mi### 300
-
+```
 Then use:
-
+```
 NVIDIA GPU Operator/device plugin
 AMD GPU device plugin
 MIG where appropriate
 HAMi where fractional GPU scheduling is appropriate
+```
 
 ### 15. GPU scheduling
 
 A workload might request:
-
+```
 resources:
   limits:
     nvidia.com/gpu: 2
-
+```
 Scheduler then determines:
 
-Which node?
-Which GPUs?
-Is there enough capacity?
-Are topology constraints satisfied?
+- Which node?
+- Which GPUs?
+- Is there enough capacity?
+- Are topology constraints satisfied?
 
 For advanced AI workloads, you may additionally need:
-
+```
 GPU topology
 NUMA topology
 PCIe topology
@@ -505,13 +508,13 @@ NVLink
 RDMA
 GPU memory
 MIG
-
+```
 This becomes much more important for multi-GPU training.
 
 ### 16. RDMA / high-performance networking
 
 For GPU/HPC workloads:
-
+```
 GPU
  │
 PCIe
@@ -523,16 +526,16 @@ RDMA
 High-speed fabric
  │
 Other GPU nodes
-
+```
 You may need:
-
+```
 RDMA
 RoCE
 InfiniBand
 SR-IOV
 Multus
 NVIDIA Network Operator
-
+```
 For distributed training, this can be as important as the GPU itself.
 
 ### 17. Node pools
@@ -540,7 +543,7 @@ For distributed training, this can be as important as the GPU itself.
 Don't put every machine into one pool.
 
 For example:
-
+```
                     Kubernetes
                         │
        ┌────────────────┼─────────────────┐
@@ -549,19 +552,19 @@ For example:
    nodes             nodes              nodes
        │                │                 │
   CPU workloads    AI/ML workloads    DB/storage
-
+```
 Use:
-
+```
 labels
 taints
 tolerations
 affinity
 topology spread
-
+```
 Example:
-
+```
 gpu=true:NoSchedule
-
+```
 means ordinary workloads won't accidentally consume expensive GPU nodes.
 
 ### 18. Scheduling
@@ -571,7 +574,7 @@ Kubernetes scheduler handles basic placement.
 But at this scale, scheduling policies become important.
 
 Use:
-
+```
 node affinity
 pod affinity
 pod anti-affinity
@@ -580,25 +583,26 @@ taints/tolerations
 priority classes
 resource requests/limits
 PDBs
-
+```
 For example:
-
+```
 Replica 1 → Rack A
 Replica 2 → Rack B
 Replica ### 3 → Rack C
-
+```
 instead of:
-
+```
 Replica 1 → Rack A
 Replica 2 → Rack A
 Replica ### 3 → Rack A
+```
 
 ### 19. Ingress
 
 You need an ingress/load-balancing layer.
 
 Typical architecture:
-
+```
 Internet / Internal users
           │
           ▼
@@ -612,15 +616,15 @@ Internet / Internal users
           │
           ▼
         Pods
-
+```
 Possible technologies:
-
+```
 NGINX
 HAProxy
 Envoy
 Traefik
 Gateway API implementations
-
+```
 For a new platform, I'd seriously consider Gateway API rather than designing everything around the older Ingress model.
 
 ### 20. DNS
@@ -636,7 +640,7 @@ Outside:
 Corporate DNS
 
 Architecture:
-
+```
 Application
     │
     ▼
@@ -644,21 +648,21 @@ Service DNS
     │
     ▼
 CoreDNS
-
+```
 At this scale, CoreDNS itself needs:
-
+```
 replicas
 resource limits
 monitoring
 autoscaling
 NodeLocal DNSCache where appropriate
-
+```
 ### 21. Service discovery
 
 Kubernetes provides:
-
+```
 service-name.namespace.svc.cluster.local
-
+```
 For external service discovery, integrate with your organization's DNS/service discovery system.
 
 ### 22. Identity and RBAC
@@ -668,7 +672,7 @@ Do not give developers:
 cluster-admin
 
 Use:
-
+```
 OIDC
    ↓
 Identity provider
@@ -676,30 +680,30 @@ Identity provider
 Groups
    ↓
 Kubernetes RBAC
-
+```
 For example:
-
+```
 team-a
   ↓
 namespace-a
   ↓
 read/write
 
-
 team-b
   ↓
 namespace-b
   ↓
 read/write
+```
 
 Platform administrators have broader permissions.
 
-### 2### 3. Secrets
+### 23. Secrets
 
 Do not put production credentials directly into Git.
 
 I'd use something like:
-
+```
 Vault
   │
   ▼
@@ -707,16 +711,18 @@ External Secrets
   │
   ▼
 Kubernetes Secret
-
+```
 or an equivalent secrets-management system.
 
 Secrets include:
-
+```
 database passwords
 API keys
 TLS certificates
 cloud credentials
 registry credentials
+```
+
 24. Image registry
 
 You need an internal registry.
