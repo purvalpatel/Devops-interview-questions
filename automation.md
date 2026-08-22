@@ -68,11 +68,76 @@ Worker receives Node-A event
 
   
 ## 9. How did you monitor the automation?
+
+> I will monitor automation with metrics, logs and alerts.i will make sure that automation is working fine or not.
+> how long it will take time to complete.
+
+- metrics
+- Log monitoring
+- Alerts
+- Dashboard
+
+
 ## 10. How did you test it?
 ## 11. What happens if the automation partially fails?
-## 12. How did you roll back?
+Make automation idempotent.
+If it is partitally fails i will set alerts. and persist the state of the automation. for that i came to know that which stage is succeed or which is failed.
+i will make sure that only  failed one should execute.  do not repeat the succeeded stages with idempotency.
+
+- checkpointing
+- retrying
+- idempotency
+- alerts
+- rollback
+
+  
+## 12. How did you rollback?
+Avoid Saying i always rollback. in infrastructure some changes are reversible and some are not.
+
+Before making changes i capture the state of the current status so it will help in rolling back.
+
+Rollback isn't always possible.
+
 ## 13. How did you make it safe for production?
-##14. How much engineering time did it save?
+
+- least privillege -> limited access
+- Scope the automation -> dont allow cluster access
+- Rate limits
+- Circuit breaker
+- gurd rails -> Never drain more then 5 nodes
+- audit trails -> every action should be recorded
+
+## 14. How much engineering time did it save?
+
 ## 15. How would you redesign it if the environment grew 10×?
+1. Horizontally scale workers
+- Scale workers according to queue lenght with using HPA/KEDA.
+
+2. Partition the queue
+3. Add per node locking
+4. persistant state
+5. Rate limiting
+6. priority queue
+7. dead-letter queue
+8. observability
+9. Reconcillation instead of relying only on events.
+
+```
+10× infrastructure
+       ↓
+Horizontal workers
+       +
+Queue partitioning
+       +
+Concurrency limits
+       +
+Rate limiting
+       +
+Persistent state
+       +
+Reconciliation
+       +
+Observability
+```
 
 
