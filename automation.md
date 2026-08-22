@@ -26,7 +26,47 @@ I didn't treat automation as a single or All-or-nothing script.
  
 
 ## 7. How did you implement retries?
+Answer:
+
+I will retry the automation only if it is transient. i will not retry every error, because retrying every error will make even worse.
+```
+Worker receives Node-A event
+          ↓
+       Execute
+          ↓
+       Failed?
+       /     \
+     No       Yes
+     ↓         ↓
+ SUCCESS    Is error retryable?
+             /        \
+           No          Yes
+           ↓            ↓
+         FAILED      Retry count?
+                       /      \
+                     < max      >= max
+                       ↓          ↓
+                    Backoff     FAILED
+                       ↓          ↓
+                    Retry      Alert
+```
+- Exponential backoff
+- Retry limit
+- Retry only transient error
+- persist retry state.
+- Idempotency
+  
 ## 8. How did you make it idempotent?
+
+> I made an automation state-based instead of action based. instead of running same automation everytime
+> i will check the state of the existing state, and accordingly i will add logic -- do i need to execute this automation or not?
+
+- check before change
+- Make each step independently Idempotent
+- Avoid non-idempotent operations
+- Database query protection
+
+  
 ## 9. How did you monitor the automation?
 ## 10. How did you test it?
 ## 11. What happens if the automation partially fails?
