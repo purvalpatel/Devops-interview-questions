@@ -108,10 +108,17 @@ Rollback isn't always possible.
 - audit trails -> every action should be recorded
 
 ## 14. How much engineering time did it save?
+Before automation this was the mostly manual tasks. and engineer had to identify the affected node, investigate it, execute it and remedeation. and sometimes repeat this process multiple times.
+
+it took around 20-30 minutes per incident.
+
+After automation it took few minutes.
+Don't measure execution time, measure human intervention.
+
 
 ## 15. How would you redesign it if the environment grew 10×?
 1. Horizontally scale workers
-- Scale workers according to queue lenght with using HPA/KEDA.
+- Scale workers according to queue length with using HPA/KEDA.
 
 2. Partition the queue
 3. Add per node locking
